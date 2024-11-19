@@ -1,0 +1,57 @@
+#include <Servo.h>
+
+const int trigPin = 3;  // Pin TRIG del sensor al pin 3 de Arduino
+const int echoPin = 4;  // Pin ECHO del sensor al pin 4 de Arduino
+const int ledRojo = 31;  // LED rojo conectado a la fila 31
+const int ledVerde = 36; // LED verde conectado a la fila 36
+const int servoPin = 9;  // Servo motor conectado al pin 9
+
+Servo servo;
+
+void setup() {
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(ledRojo, OUTPUT);
+  pinMode(ledVerde, OUTPUT);
+
+  servo.attach(servoPin);
+  servo.write(0); // Barrera cerrada al inicio
+  
+  Serial.begin(9600); // Para monitorear en la consola serial
+}
+
+void loop() {
+  long duration;
+  int distance;
+
+  // Enviar pulso TRIG
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // Leer el tiempo del ECHO
+  duration = pulseIn(echoPin, HIGH);
+
+  // Calcular la distancia (en cm)
+  distance = duration * 0.034 / 2;
+
+  // Mostrar distancia en la consola serial
+  Serial.print("Distancia: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  // Lógica para abrir o cerrar la barrera
+  if (distance <= 10) { // Si la distancia es menor o igual a 10 cm
+    digitalWrite(ledRojo, LOW);  // Apagar LED rojo
+    digitalWrite(ledVerde, HIGH); // Encender LED verde
+    servo.write(90); // Abrir barrera
+  } else {
+    digitalWrite(ledRojo, HIGH); // Encender LED rojo
+    digitalWrite(ledVerde, LOW); // Apagar LED verde
+    servo.write(0); // Cerrar barrera
+  }
+
+  delay(500); // Esperar medio segundo antes de medir otra vez
+}
